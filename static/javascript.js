@@ -173,49 +173,47 @@ $(document).ready(function() {
 	$('#dropped-files #upload-button .delete').click(restartFiles);
 	
 	// Upload button click handler
-	$('#upload-button .upload').click(function() {
-		// Check if there are any images to upload
-		if (dataArray.length > 0) {
-		  // Get the first image from the dataArray
-		  var selectedImage = dataArray[0];
-	
-		  // Create a FormData object to send the image data
-		  var formData = new FormData();
-		  formData.append('name', selectedImage.name); // Add the file name
-		  formData.append('image_file', selectedImage.value); // Add the file data
-	
-		  // Send the POST request to upload the image
-		  $.ajax({
-			url: '/upload_image/', // Replace with your server-side URL
-			method: 'POST',
-			data: formData,
-			processData: false,
-			contentType: false,
-			success: function(response) {
-			  // Handle successful upload response
-			  if (response.status === 'success') {
-				// Update UI to reflect successful upload
-				addImage(-1); // Update image previews
-				$('#uploaded-files').append('<li><a href="images/' + response.filename + '">' + selectedImage.name + '</a> uploaded successfully</li>');
-				// Reset dataArray and clear image previews
-				dataArray.splice(0, 1);
-				$('#dropped-files > .image').remove();
-			  } else {
-				// Handle error response
-				alert('Error uploading file: ' + response.message);
-			  }
-			},
-			error: function(error) {
-			  // Handle AJAX error
-			  console.error('Error uploading file:', error);
-			  alert('An error occurred while uploading the file.');
-			}
-		  });
-		} else {
-		  // No images to upload, display an error message
-		  alert('Please select an image to upload.');
-		}
-	  });
+$('#upload-button .upload').click(function() {
+	// Check if there are any images to upload
+	if (dataArray.length > 0) {
+	  // Get the first image from the dataArray
+	  var selectedImage = dataArray[0];
+  
+	  // Create a FormData object to send the image data
+	  var formData = new FormData();
+	  formData.append('name', selectedImage.name); // Add the file name
+	  formData.append('image_file', selectedImage.value); // Add the file data
+  
+	  // Send the POST request to upload the image using Fetch API
+	  fetch('/upload_image/', {
+		method: 'POST',
+		body: formData,
+	  })
+		.then(response => response.json())
+		.then(response => {
+		  // Handle successful upload response
+		  if (response.status === 'success') {
+			// Update UI to reflect successful upload
+			addImage(-1); // Update image previews
+			$('#uploaded-files').append('<li><a href="images/' + response.filename + '">' + selectedImage.name + '</a> uploaded successfully</li>');
+			// Reset dataArray and clear image previews
+			dataArray.splice(0, 1);
+			$('#dropped-files > .image').remove();
+		  } else {
+			// Handle error response
+			alert('Error uploading file: ' + response.message);
+		  }
+		})
+		.catch(error => {
+		  // Handle AJAX error
+		  console.error('Error uploading file:', error);
+		  alert('An error occurred while uploading the file.');
+		});
+	} else {
+	  // No images to upload, display an error message
+	  alert('Please select an image to upload.');
+	}
+  });
 	
 	// Простые стили для области перетаскивания
 	$('#drop-files').on('dragenter', function() {
